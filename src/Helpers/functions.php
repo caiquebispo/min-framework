@@ -7,3 +7,13 @@ if(!function_exists('dd')){
         die;
     }
 }
+if(!function_exists('view')){
+
+    function view(string $path, array $params)
+    {
+        extract($params);
+        
+        include './resources/views/'.$path.'.php';
+
+    }
+}
