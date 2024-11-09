@@ -39,11 +39,11 @@ Executar comandos composer
 
 ## Informação da aplicação
 
-Host: localhost
-Port: 8002
-Mysql Host: 172.17.0.1
-Mysql User: root
-Mysql Password: password
-Mysql Table: project
+- Host: localhost
+- Port: 8002
+- Mysql Host: 172.17.0.1
+- Mysql User: root
+- Mysql Password: password
+- Mysql Table: project
 
 
