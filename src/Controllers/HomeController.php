@@ -3,11 +3,14 @@
 namespace Caiquebispo\Project\Controllers;
 
 use Caiquebispo\Project\Core\Service\Http;
+use Exception;
+use PDO;
 
 class HomeController
 {
     public function index()
     {
+
         $payload = Http::put('https://fakestoreapi.com/carts/7')
             ->withData([
                 'userId' => 10,
@@ -17,8 +20,7 @@ class HomeController
             ])
             ->toJson();
 
-        var_dump($payload);
+        dd($payload);
         exit();
-        //return view('index', compact('title', 'teste'));
     }
 }

@@ -109,7 +109,7 @@ class Http implements HttpInterface
         $this->execute();
         return $this->response;
     }
-    public function execute($hotelID = null): void
+    public function execute(): void
     {
         $url = $this->paramsURL ? self::$url . '?' . $this->paramsURL :  self::$url . self::$method;
 
