@@ -10,7 +10,7 @@ class DB
     private  static ?string $table = null;
     private static string $query = '';
     private static string $partial_query = '';
-    private static array $params_query = [];
+    private static string $params_query = ' * ';
     private static array $params_query_update = [];
     private static array $conditional_params_query = [];
     private static string $type_query = 'SELECT';
@@ -38,7 +38,7 @@ class DB
      * @param array $params
      * @return DB
      */
-    public static function select(array $params = []): DB
+    public static function select(mixed $params = ' * '): DB
     {
         self::$params_query = $params;
         return self::getInstanceOfClass();
@@ -50,6 +50,8 @@ class DB
      */
     public  static function where(string|array $column = null, string $operator = null, mixed $value = null): DB
     {
+        self::$partial_query = '';
+
         if (is_array($column)) {
             self::$wheres = $column;
         } else {
@@ -57,10 +59,12 @@ class DB
         }
 
         self::$partial_query .= ' WHERE ';
+
         $conditions = [];
 
         foreach (self::$wheres as $where) {
-            $conditions[] = (isset($where['column']) && isset($where['operator'])) ? "`{$where['column']}` {$where['operator']} ?" : "`{$where[0]}` {$where[1]} ?";
+
+            $conditions[] = (isset($where['column']) && isset($where['operator'])) ? "`{$where['column']}` {$where['operator']} " . self::getInstanceOfPDO()->quote($where['value']) : "`{$where[0]}` {$where[1]} " . self::getInstanceOfPDO()->quote($where[2]);
         }
 
         self::$partial_query .= implode(' AND ', $conditions);
@@ -96,7 +100,7 @@ class DB
             self::$partial_query = "(" . implode(', ', $columns) . ") VALUES ($placeholders)";
         }
 
-        self::$params_query = $attributes;
+        //self::$params_query = $attributes;
 
         self::prepareSQLQuery('INSERT');
 
@@ -109,6 +113,18 @@ class DB
     {
         return self::getInstanceOfPDO()->lastInsertId();
     }
+    public static function get(): bool|array
+    {
+        return self::prepareSQLQuery('SELECT')->fetchAll();
+    }
+
+    /**
+     * @return mixed
+     */
+    public static function first(): mixed
+    {
+        return self::prepareSQLQuery('SELECT')->fetch();
+    }
     /**
      * @return bool|\PDOStatement
      */
@@ -116,6 +132,12 @@ class DB
     {
         self::$query = "INSERT INTO " . self::$table . " " . self::$partial_query;
         return self::executeQuery('INSERT');
+    }
+    private static function createSelectQuery()
+    {
+        self::$query = "SELECT " . self::$params_query . " FROM " . self::$table . " " . self::$partial_query;
+
+        return self::executeQuery('SELECT');
     }
     /**
      * @param $type_query
@@ -126,6 +148,7 @@ class DB
 
         return match ($type_query) {
             'INSERT' => self::createInsertQuery(),
+            'SELECT' => self::createSelectQuery(),
         };
     }
     /**
