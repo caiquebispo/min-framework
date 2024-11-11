@@ -117,7 +117,10 @@ class DB
     {
         return self::prepareSQLQuery('SELECT')->fetchAll();
     }
-
+    public static function delete(): ?bool
+    {
+        return self::prepareSQLQuery('DELETE');
+    }
     /**
      * @return mixed
      */
@@ -139,6 +142,12 @@ class DB
 
         return self::executeQuery('SELECT');
     }
+    private static function createDeleteQuery()
+    {
+        self::$query = "DELETE FROM " . self::$table . " " . self::$partial_query;
+
+        return self::executeQuery();
+    }
     /**
      * @param $type_query
      * @return bool|\PDOStatement
@@ -149,6 +158,7 @@ class DB
         return match ($type_query) {
             'INSERT' => self::createInsertQuery(),
             'SELECT' => self::createSelectQuery(),
+            'DELETE' => self::createDeleteQuery(),
         };
     }
     /**

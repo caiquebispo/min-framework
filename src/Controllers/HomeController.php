@@ -10,13 +10,13 @@ class HomeController
     {
 
 
-        $userId = DB::table('GMP0017')
-            ->insert(['name' => 'Caique Bispo', 'age' => 27])
-            ->id();
+        // $userId = DB::table('GMP0017')
+        //     ->insert(['name' => 'Caique Bispo', 'age' => 27])
+        //     ->id();
 
         $result = DB::table('GMP0017')
-            ->where('GMP0017_Id', '=', $userId)
-            ->get();
+            ->where('GMP0017_Id', '=', 15)
+            ->delete();
 
         dd($result);
     }
