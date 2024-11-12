@@ -11,10 +11,6 @@ class DB
     private static string $query = '';
     private static string $partial_query = '';
     private static string $params_query = ' * ';
-    private static array $params_query_update = [];
-    private static array $conditional_params_query = [];
-    private static string $type_query = 'SELECT';
-    private static string $type_clause_query = 'WHERE';
     private static array $wheres = [];
     public static $pdo = null;
     public static $instanceOfClass = null;
@@ -72,6 +68,33 @@ class DB
         return self::getInstanceOfClass();
     }
     /**
+     * @param array $params
+     * @return DB
+     */
+    public static function whereIn(string $field, array $attributes): DB
+    {
+
+        self::$partial_query .= "WHERE {$field} IN (" . implode(',', $attributes) . ")";
+
+        self::prepareSQLQuery('SELECT');
+
+        return self::getInstanceOfClass();
+    }
+    /**
+     * @param array $params
+     * @return DB
+     */
+    public static function whereNotIn(string $field, array $attributes): DB
+    {
+
+        self::$partial_query .= "WHERE {$field} NOT IN (" . implode(',', $attributes) . ")";
+
+        self::prepareSQLQuery('SELECT');
+
+        return self::getInstanceOfClass();
+    }
+    /**
+     * @param array $params
      * @return DB
      */
     public static function insert(array $attributes): ?DB
@@ -113,6 +136,9 @@ class DB
     {
         return self::getInstanceOfPDO()->lastInsertId();
     }
+    /**
+     * @return bool|array
+     */
     public static function get(): bool|array
     {
         return self::prepareSQLQuery('SELECT')->fetchAll();
