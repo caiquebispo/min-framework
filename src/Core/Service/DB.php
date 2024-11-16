@@ -96,6 +96,29 @@ class DB
      * @param array $params
      * @return DB
      */
+    public static function join(string $table, string $first_arg, string $operator, string $second_arg): DB
+    {
+        $joins = [];
+
+        $joins[] = compact('table', 'first_arg', 'operator', 'second_arg');
+
+        self::$partial_query .= implode(
+            ',',
+            array_map(
+                function ($join) {
+
+                    return " JOIN {$join['table']} ON {$join['first_arg']} {$join['operator']} {$join['second_arg']}";
+                },
+                $joins
+            )
+        );
+
+        return self::getInstanceOfClass();
+    }
+    /**
+     * @param array $params
+     * @return DB
+     */
     public static function insert(array $attributes): ?DB
     {
         $isMultidimensional = is_array(reset($attributes));
@@ -186,7 +209,7 @@ class DB
     private static function createSelectQuery()
     {
         self::$query = "SELECT " . self::$params_query . " FROM " . self::$table . " " . self::$partial_query;
-
+        dd(self::$query);
         return self::executeQuery('SELECT');
     }
     private static function createDeleteQuery()

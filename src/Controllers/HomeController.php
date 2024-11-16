@@ -15,8 +15,9 @@ class HomeController
     {
 
         dd(
-            DB::table('GMP0017')
-
+            DB::table('profiles')
+                ->where('profiles.id', '=', 1)
+                ->join('modules', 'modules.profile_id', '=', 'profile_id')
                 ->get()
 
         );
