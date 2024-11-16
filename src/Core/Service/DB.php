@@ -129,6 +129,28 @@ class DB
         return self::getInstanceOfClass();
     }
     /**
+     * @param array $params
+     * @return void
+     */
+    public static function update(array $attributes): void
+    {
+
+        self::$params_query = '';
+
+        self::$params_query .= implode(
+            ',',
+            array_map(
+                function ($key, $value) {
+                    return $key . '=' . self::getInstanceOfPDO()->quote($value);
+                },
+                array_keys($attributes),
+                array_values($attributes)
+            )
+        );
+
+        self::prepareSQLQuery('UPDATE');
+    }
+    /**
      * @return int|null
      */
     public static function id(): ?int
@@ -173,6 +195,12 @@ class DB
 
         return self::executeQuery();
     }
+    private static function createUpdateQuery()
+    {
+        self::$query = "UPDATE " . self::$table . " SET " . self::$params_query . " " . self::$partial_query;
+
+        return self::executeQuery();
+    }
     /**
      * @param $type_query
      * @return bool|\PDOStatement
@@ -184,6 +212,7 @@ class DB
             'INSERT' => self::createInsertQuery(),
             'SELECT' => self::createSelectQuery(),
             'DELETE' => self::createDeleteQuery(),
+            'UPDATE' => self::createUpdateQuery(),
         };
     }
     /**

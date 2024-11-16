@@ -11,5 +11,14 @@ class HomeController
 
         return view('welcome', ['version' => '0.0.1']);
     }
-    public function debug(int $id, string $name) {}
+    public function debug(int $id)
+    {
+
+        dd(
+            DB::table('GMP0017')
+
+                ->get()
+
+        );
+    }
 }
