@@ -39,7 +39,6 @@ class DB
         self::$params_query = $params;
         return self::getInstanceOfClass();
     }
-
     /**
      * @param array $params
      * @return DB

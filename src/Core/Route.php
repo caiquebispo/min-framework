@@ -1,70 +1,70 @@
 <?php
+
 namespace Caiquebispo\Project\Core;
+
 class Route
 {
-    protected static ?array $routes = [];
-    private static function addRoute($route, $controller, $action, $method): void
-    {
+    private static array $routes = [];
 
-       self::$routes[$method][] = ['route' => $route,'controller' => $controller, 'method' => $action];
+    public static function get(string $uri, callable|array $action): void
+    {
+        self::addRoute('GET', $uri, $action);
     }
 
-    public static function get($route, array|\Closure $params): void
+    public static function post(string $uri, callable|array $action): void
     {
-        if($params instanceof \Closure){
-            call_user_func($params);
-            return;
-        }
-
-        self::addRoute($route, $params[array_key_first($params)], $params[array_key_last($params)], "GET");
-    }
-    public static function delete($route, array|\Closure $params): void
-    {
-        if($params instanceof \Closure){
-            call_user_func($params);
-            return;
-        }
-
-        self::addRoute($route, $params[array_key_first($params)], $params[array_key_last($params)], "DELETE");
-    }
-    public static function put($route, array|\Closure $params): void
-    {
-        if($params instanceof \Closure){
-            call_user_func($params);
-            return;
-        }
-
-        self::addRoute($route, $params[array_key_first($params)], $params[array_key_last($params)], "PUT");
+        self::addRoute('POST', $uri, $action);
     }
 
-    public static function post($route, array|\Closure $params): void
+    public static function put(string $uri, callable|array $action): void
     {
-        if($params instanceof \Closure){
-            call_user_func($params);
-            return;
-        }
+        self::addRoute('PUT', $uri, $action);
+    }
 
-        self::addRoute($route, $params[array_key_first($params)], $params[array_key_last($params)], "POST");
+    public static function delete(string $uri, callable|array $action): void
+    {
+        self::addRoute('DELETE', $uri, $action);
+    }
+
+    private static function addRoute(string $method, string $uri, callable|array $action): void
+    {
+        self::$routes[$method][$uri] = $action;
     }
 
     public static function dispatch(): void
     {
-        $uri = strtok($_SERVER['REQUEST_URI'], '?');
-        $method =  $_SERVER['REQUEST_METHOD'];
+        $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $method = $_SERVER['REQUEST_METHOD'];
 
-        $index_route = array_search($uri,
-            array_column(self::$routes[$method], 'route')
-        );
-
-        if($index_route !== false){
-
-            $controller = new self::$routes[$method][$index_route]['controller'];
-            $method = self::$routes[$method][$index_route]['method'];
-            $controller->$method();
-
-        } else {
-            throw new \Exception("No route found for URI: $uri");
+        if (!isset(self::$routes[$method])) {
+            self::notFound();
+            return;
         }
+
+        foreach (self::$routes[$method] as $route => $action) {
+            $routePattern = preg_replace('/\{(\w+)\}/', '(?P<$1>[^/]+)', $route);
+            $routePattern = '#^' . $routePattern . '$#';
+
+            if (preg_match($routePattern, $url, $matches)) {
+                $parameters = array_values(array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY));
+
+                if (is_array($action)) {
+                    [$controller, $method] = $action;
+                    call_user_func_array([new $controller, $method], [...$parameters]);
+                } else {
+                    call_user_func_array($action, [...$parameters]);
+                }
+                return;
+            }
+        }
+
+        self::notFound();
     }
 
+    private static function notFound(): void
+    {
+        http_response_code(404);
+        echo "Rota não encontrada";
+        // Retornar alguma view de erro aqui, por enquanto deixa apenas o echo
+    }
 }
